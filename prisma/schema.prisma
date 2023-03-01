@@ -7,17 +7,7 @@ generator client {
 
 datasource db {
     provider = "sqlite"
-    // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
-}
-
-model Example {
-    id        String   @id @default(cuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 }
 
 // Necessary for Next auth
@@ -26,7 +16,7 @@ model Account {
     userId            String
     type              String
     provider          String
-    providerAccountId String
+    providerAccountId String  @map("provider_account_id")
     refresh_token     String? // @db.Text
     access_token      String? // @db.Text
     expires_at        Int?
@@ -37,24 +27,36 @@ model Account {
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
     @@unique([provider, providerAccountId])
+    @@map("account")
 }
 
 model Session {
     id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
+    sessionToken String   @unique @map("session_token")
+    userId       String   @map("user_id")
     expires      DateTime
     user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@map("session")
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String         @id @default(cuid())
     name          String?
-    email         String?   @unique
-    emailVerified DateTime?
+    email         String?        @unique
+    emailVerified DateTime?      @map("email_verified")
+    role          String         @default("PATIENT")
     image         String?
     accounts      Account[]
     sessions      Session[]
+    Doctor        Doctor?
+    Appointments  Appointments[]
+    createdAt     DateTime       @default(now()) @map(name: "created_at")
+    updatedAt     DateTime       @updatedAt @map(name: "updated_at")
+    insurance     Insurance?     @relation(fields: [insuranceId], references: [id])
+    insuranceId   Int?           @map("insurance_id")
+
+    @@map("user")
 }
 
 model VerificationToken {
@@ -63,4 +65,103 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+    @@map("verification_token")
 }
+
+model Doctor {
+    id               Int                     @id @default(autoincrement())
+    doctorName       String                  @map("doctor_name")
+    info             String? // @db.VarChar(4000)
+    doctorImage      String?                 @map("doctor_image") // @db.VarChar(255)
+    createdAt        DateTime                @default(now()) @map(name: "created_at")
+    updatedAt        DateTime                @updatedAt @map(name: "updated_at")
+    user             User                    @relation(fields: [userId], references: [id])
+    userId           String                  @unique
+    specializations  DoctorSpecializations[]
+    appointments     Appointments[]
+    DoctorInsurances DoctorInsurances[]
+
+    @@map(name: "doctor")
+}
+
+model Specialization {
+    id                     Int                     @id
+    specializationName     String                  @map("specialization_name") // @db.VarChar(100)
+    createdAt              DateTime                @default(now()) @map(name: "created_at")
+    updatedAt              DateTime                @updatedAt @map(name: "updated_at")
+    doctorsSpecializations DoctorSpecializations[]
+
+    @@map(name: "specialization")
+}
+
+model DoctorSpecializations {
+    id               Int            @id @default(autoincrement())
+    doctor           Doctor         @relation(fields: [doctorId], references: [id])
+    doctorId         Int            @map("doctor_id")
+    specialization   Specialization @relation(fields: [specializationId], references: [id])
+    specializationId Int            @map("specialization_id")
+    createdAt        DateTime       @default(now()) @map(name: "created_at")
+    updatedAt        DateTime       @updatedAt @map(name: "updated_at")
+
+    @@index([doctorId, specializationId])
+    @@map(name: "doctor_specialization")
+}
+
+model Insurance {
+    id               Int                @id @default(autoincrement())
+    insuranceName    String             @unique @map("insurance_name") // @db.VarChar(100)
+    createdAt        DateTime           @default(now()) @map(name: "created_at")
+    updatedAt        DateTime           @updatedAt @map(name: "updated_at")
+    insuranceImage   String?            @map(name: "insurance_image") // @db.VarChar(255)
+    doctorInsurances DoctorInsurances[]
+    User             User[]
+
+    @@map(name: "insurance")
+}
+
+model DoctorInsurances {
+    id          String    @default(cuid())
+    doctor      Doctor    @relation(fields: [doctorId], references: [id])
+    doctorId    Int       @map("doctor_id")
+    insurance   Insurance @relation(fields: [insuranceId], references: [id])
+    insuranceId Int       @map("insurance_id")
+    createdAt   DateTime  @default(now()) @map(name: "created_at")
+    updatedAt   DateTime  @updatedAt @map(name: "updated_at")
+
+    @@id([doctorId, insuranceId])
+    @@map(name: "doctor_insurance")
+}
+
+model Appointments {
+    id             Int      @id @default(autoincrement())
+    user           User?    @relation(fields: [userId], references: [id])
+    userId         String?  @map("user_id")
+    doctor         Doctor   @relation(fields: [doctorId], references: [id])
+    doctorId       Int      @map("doctor_id")
+    date           DateTime
+    slot           String
+    isAvailable    Boolean  @default(true) @map("is_available")
+    insurance      String?
+    createdAt      DateTime @default(now()) @map(name: "created_at")
+    updatedAt      DateTime @updatedAt @map(name: "updated_at")
+    specialization String?
+
+    @@unique([date, slot, doctorId])
+    @@index([userId, doctorId])
+    @@map(name: "appointment")
+}
+
+model Slots {
+    id        Int      @id @default(autoincrement())
+    slot      String
+    createdAt DateTime @default(now()) @map(name: "created_at")
+    updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+    @@map("slot")
+}
+
+// enum Role {
+//     ADMIN
+//     USER
+//     DOCTOR
+// }

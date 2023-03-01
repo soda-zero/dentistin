@@ -2,9 +2,13 @@
 const config = {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        inter: ["Inter", "ui"],
+      },
+    },
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 };
 
 module.exports = config;
