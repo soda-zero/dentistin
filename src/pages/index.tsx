@@ -1,14 +1,11 @@
 import { type NextPage } from "next";
 import Head from "next/head";
-import Link from "next/link";
-import { signIn, signOut, useSession } from "next-auth/react";
-
-import { api } from "@/utils/api";
 import Layout from "./layout";
+import InsuranceCard from "@/components/InsuranceCards";
+import Doctors from "@/components/DoctorsCard";
+import Link from "next/link";
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
   return (
     <>
       <Head>
@@ -17,54 +14,63 @@ const Home: NextPage = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Layout>
-        <main>
-          <div
-            className="hero min-h-screen"
-            style={{
-              backgroundImage: `url("/images/stock/photo-1507358522600-9f71e620c44e.jpg")`,
-            }}
-          >
-            <div className="hero-overlay bg-opacity-60"></div>
-            <div className="hero-content text-center text-neutral-content">
-              <div className="max-w-md">
-                <h1 className="mb-5 text-5xl font-bold">Hello there</h1>
-                <p className="mb-5">
-                  Provident cupiditate voluptatem et in. Quaerat fugiat ut
-                  assumenda excepturi exercitationem quasi. In deleniti eaque
-                  aut repudiandae et a id nisi.
-                </p>
-                <button className="btn-primary btn">Get Started</button>
-              </div>
+        <div
+          className="hero min-h-screen"
+          style={{
+            backgroundImage: `url("/images/hero-img.jpg")`,
+          }}
+          id="hero"
+        >
+          <div className="hero-overlay bg-opacity-60"></div>
+          <div className="hero-content text-center text-neutral-content">
+            <div className="max-w-md">
+              <h1 className="mb-5 text-5xl font-bold">Hello there</h1>
+              <p className="mb-5">
+                Provident cupiditate voluptatem et in. Quaerat fugiat ut
+                assumenda excepturi exercitationem quasi. In deleniti eaque aut
+                repudiandae et a id nisi.
+              </p>
+              <button className="btn-primary btn">Get Started</button>
             </div>
           </div>
-        </main>
+        </div>
+        <section
+          className="mx-auto w-full max-w-3xl border-opacity-50 p-2"
+          id="professionals"
+        >
+          <div className="divider p-2"></div>
+          <div className="grid h-full place-items-start ">
+            <h2 className="mx-2 text-4xl">Our professionals</h2>
+          </div>
+
+          <div className="scrollbar m-2 grid  max-h-[440px]  grid-cols-1 place-items-start gap-4  overflow-x-auto rounded-lg p-2 sm:grid-cols-2 md:grid-cols-3 ">
+            <Doctors />
+            <Doctors />
+            <Doctors />
+          </div>
+        </section>
+        <section
+          className="mx-auto w-full max-w-3xl border-opacity-50 p-2"
+          id="information"
+        >
+          <div className="divider p-2"></div>
+          <div className="grid h-full place-items-start ">
+            <h2 className="mx-2 text-4xl">Information</h2>
+          </div>
+          <div className="m-2 grid grid-cols-2 gap-4">
+            <section>
+              <h2>Insurances</h2>
+              <InsuranceCard />
+            </section>
+            <section>
+              <h2>Contact</h2>
+              <InsuranceCard />
+            </section>
+          </div>
+        </section>
       </Layout>
     </>
   );
 };
 
 export default Home;
-
-const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
-
-  const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-    undefined, // no input
-    { enabled: sessionData?.user !== undefined }
-  );
-
-  return (
-    <div className="flex flex-col items-center justify-center gap-4">
-      <p className="text-center text-2xl text-white">
-        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-        {secretMessage && <span> - {secretMessage}</span>}
-      </p>
-      <button
-        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-        onClick={sessionData ? () => void signOut() : () => void signIn()}
-      >
-        {sessionData ? "Sign out" : "Sign in"}
-      </button>
-    </div>
-  );
-};

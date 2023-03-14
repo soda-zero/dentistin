@@ -49,8 +49,8 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    Doctor        Doctor?
-    Appointments  Appointments[]
+    doctor        Doctor?
+    appointments  Appointments[]
     createdAt     DateTime       @default(now()) @map(name: "created_at")
     updatedAt     DateTime       @updatedAt @map(name: "updated_at")
     insurance     Insurance?     @relation(fields: [insuranceId], references: [id])
@@ -69,17 +69,17 @@ model VerificationToken {
 }
 
 model Doctor {
-    id               Int                     @id @default(autoincrement())
-    doctorName       String                  @map("doctor_name")
-    info             String? // @db.VarChar(4000)
-    doctorImage      String?                 @map("doctor_image") // @db.VarChar(255)
-    createdAt        DateTime                @default(now()) @map(name: "created_at")
-    updatedAt        DateTime                @updatedAt @map(name: "updated_at")
-    user             User                    @relation(fields: [userId], references: [id])
-    userId           String                  @unique
-    specializations  DoctorSpecializations[]
-    appointments     Appointments[]
-    DoctorInsurances DoctorInsurances[]
+    id                    Int                     @id @default(autoincrement())
+    doctorName            String                  @map("doctor_name")
+    info                  String? // @db.VarChar(4000)
+    doctorImage           String?                 @map("doctor_image") // @db.VarChar(255)
+    createdAt             DateTime                @default(now()) @map(name: "created_at")
+    updatedAt             DateTime                @updatedAt @map(name: "updated_at")
+    user                  User                    @relation(fields: [userId], references: [id])
+    userId                String                  @unique
+    doctorSpecializations DoctorSpecializations[]
+    appointments          Appointments[]
+    doctorInsurances      DoctorInsurances[]
 
     @@map(name: "doctor")
 }
@@ -99,7 +99,7 @@ model DoctorSpecializations {
     doctor           Doctor         @relation(fields: [doctorId], references: [id])
     doctorId         Int            @map("doctor_id")
     specialization   Specialization @relation(fields: [specializationId], references: [id])
-    specializationId Int            @map("specialization_id")
+    specializationId Int            @map("doctor_specialization_id")
     createdAt        DateTime       @default(now()) @map(name: "created_at")
     updatedAt        DateTime       @updatedAt @map(name: "updated_at")
 
